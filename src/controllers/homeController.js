@@ -12,8 +12,7 @@ let getHomePage = async (req, res) => {
 
 let getCRUD = async (req, res) => {
     try {
-        let data = await db.User.findAll();
-        return res.render('crud.ejs', { data });
+        return res.render('crud.ejs');
     } catch (error) {
         console.log(error);
     }
@@ -23,6 +22,11 @@ let createUser = async (req, res) => {
     let response = await CRUDService.createUser(req.body);
 };
 
+let getAllUsers = async (req, res) => {
+    let response = await CRUDService.getAllUsers();
+    return res.render('displayCRUD.ejs', { data: response.data });
+};
+
 module.exports = {
-    getHomePage, getCRUD, createUser
+    getHomePage, getCRUD, createUser, getAllUsers
 };

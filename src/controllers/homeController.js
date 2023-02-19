@@ -27,6 +27,22 @@ let getAllUsers = async (req, res) => {
     return res.render('displayCRUD.ejs', { data: response.data });
 };
 
+let editUser = async (req, res) => {
+    let id = req.query.id;
+    if (id) {
+        let response = await CRUDService.getUserById(id);
+        return res.render('editCRUD.ejs', { user: response.user });
+    } else {
+        return res.send("User not found!");
+    }
+};
+
+let editPutUser = async (req, res) => {
+    let data = req.body;
+    let response = await CRUDService.editPutUser(data);
+    return res.render('displayCRUD.ejs', { data: response.data });
+};
+
 module.exports = {
-    getHomePage, getCRUD, createUser, getAllUsers
+    getHomePage, getCRUD, createUser, getAllUsers, editUser, editPutUser
 };

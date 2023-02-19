@@ -55,6 +55,54 @@ let getAllUsers = () => {
     });
 };
 
+let getUserById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { id },
+                raw: true
+            });
+            if (user) {
+                resolve({
+                    errCode: 0,
+                    user,
+                    errMessage: "Get user successfully!"
+                });
+            } else {
+                resolve({});
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+let editPutUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.User.update(
+                {
+                    firstName: data.firstName,
+                    lastName: data.lastName
+                },
+                {
+                    where: { id: data.id }
+                }
+            );
+            let users = await db.User.findAll({
+                raw: true
+            });
+            resolve({
+                errCode: 0,
+                data: users,
+                errMessage: "Update user successfully!"
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    createUser, getAllUsers
+    createUser, getAllUsers, getUserById, editPutUser
 };

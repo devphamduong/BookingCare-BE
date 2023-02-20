@@ -103,6 +103,26 @@ let editPutUser = (data) => {
     });
 };
 
+let deleteUserById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.User.destroy({
+                where: { id }
+            });
+            let users = await db.User.findAll({
+                raw: true
+            });
+            resolve({
+                errCode: 0,
+                data: users,
+                errMessage: "Delete user successfully!"
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    createUser, getAllUsers, getUserById, editPutUser
+    createUser, getAllUsers, getUserById, editPutUser, deleteUserById
 };

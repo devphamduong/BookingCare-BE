@@ -39,15 +39,15 @@ let handleLogin = (email, password) => {
                         userData.user = user;
                     } else {
                         userData.errCode = 3;
-                        userData.message = "Wrong password!";
+                        userData.errMessage = "Wrong password!";
                     }
                 } else {
                     userData.errCode = 2;
-                    userData.message = "User not found!";
+                    userData.errMessage = "User not found!";
                 }
             } else {
                 userData.errCode = 1;
-                userData.message = "Your email isn't exist in our system. Please try again!";
+                userData.errMessage = "Your email isn't exist in our system. Please try again!";
             }
             resolve(userData);
         } catch (error) {
@@ -100,24 +100,25 @@ let createUser = (data) => {
             if (check) {
                 resolve({
                     errCode: 1,
-                    message: 'Your email is already in use!'
+                    errMessage: 'Your email is already in use. Try another one!'
+                });
+            } else {
+                let hashPaswordBcrypt = await hashPassword(data.password);
+                await db.User.create({
+                    email: data.email,
+                    password: hashPaswordBcrypt,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                    phoneNumber: data.phoneNumber,
+                    gender: data.gender === '1' ? true : false,
+                    roleId: data.roleId,
+                });
+                resolve({
+                    errCode: 0,
+                    message: "OK"
                 });
             }
-            let hashPaswordBcrypt = await hashPassword(data.password);
-            await db.User.create({
-                email: data.email,
-                password: hashPaswordBcrypt,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                address: data.address,
-                phoneNumber: data.phoneNumber,
-                gender: data.gender === '1' ? true : false,
-                roleId: data.roleId,
-            });
-            resolve({
-                errCode: 0,
-                message: "OK"
-            });
         } catch (error) {
             reject(error);
         }
@@ -130,7 +131,7 @@ let updateUser = (data) => {
             if (!data.id) {
                 resolve({
                     errCode: 1,
-                    message: 'Missing required parameters!',
+                    errMessage: 'Missing required parameters!',
                 });
             }
             let user = await db.User.findOne({
@@ -139,13 +140,14 @@ let updateUser = (data) => {
             if (!user) {
                 resolve({
                     errCode: 2,
-                    message: "User not found!"
+                    errMessage: "User not found!"
                 });
             }
             await db.User.update(
                 {
                     firstName: data.firstName,
-                    lastName: data.lastName
+                    lastName: data.lastName,
+                    address: data.address
                 },
                 {
                     where: { id: data.id }
@@ -170,7 +172,7 @@ let deleteUser = (id) => {
             if (!user) {
                 resolve({
                     errCode: 2,
-                    message: "User not found!"
+                    errMessage: "User not found!"
                 });
             }
             await db.User.destroy({
@@ -186,6 +188,29 @@ let deleteUser = (id) => {
     });
 };
 
+let getAllCode = (type) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!type) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                });
+            } else {
+                let data = await db.AllCode.findAll({
+                    where: { type }
+                });
+                resolve({
+                    errCode: 0,
+                    data
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    handleLogin, getAllUsers, createUser, updateUser, deleteUser
+    handleLogin, getAllUsers, createUser, updateUser, deleteUser, getAllCode
 };

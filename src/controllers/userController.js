@@ -7,13 +7,13 @@ let handleLogin = async (req, res) => {
     if (!email || !password) {
         return res.status(200).json({
             errCode: 1,
-            message: "Missing required parameters!"
+            errMessage: "Missing required parameters!"
         });
     }
     let userData = await userService.handleLogin(email, password);
     return res.status(200).json({
         errCode: userData.errCode,
-        message: userData.message,
+        message: userData.errMessage,
         user: userData.user ? userData.user : {}
     });
 };
@@ -23,7 +23,7 @@ let getAllUsers = async (req, res) => {
     if (!id) {
         return res.status(200).json({
             errCode: 1,
-            message: "Missing required parameters!"
+            errMessage: "Missing required parameters!"
         });
     }
     let users = await userService.getAllUsers(id);
@@ -35,11 +35,8 @@ let getAllUsers = async (req, res) => {
 };
 
 let createUser = async (req, res) => {
-    await userService.createUser(req.body);
-    return res.status(200).json({
-        errCode: 0,
-        message: 'OK',
-    });
+    let message = await userService.createUser(req.body);
+    return res.status(200).json(message);
 };
 
 let editUser = async (req, res) => {
@@ -52,13 +49,25 @@ let deleteUser = async (req, res) => {
     if (!req.body.id) {
         return res.status(200).json({
             errCode: 1,
-            message: 'Missing required parameters!',
+            errMessage: 'Missing required parameters!',
         });
     }
     let message = await userService.deleteUser(req.body.id);
     return res.status(200).json(message);
 };
 
+let getAllCode = async (req, res) => {
+    try {
+        let data = await userService.getAllCode(req.query.type);
+        return res.status(200).json(data);
+    } catch (error) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        });
+    }
+};
+
 module.exports = {
-    handleLogin, getAllUsers, createUser, editUser, deleteUser
+    handleLogin, getAllUsers, createUser, editUser, deleteUser, getAllCode
 };

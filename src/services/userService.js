@@ -145,21 +145,38 @@ let updateUser = (data) => {
                     errMessage: "User not found!"
                 });
             }
-            await db.User.update(
-                {
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    phoneNumber: data.phoneNumber,
-                    address: data.address,
-                    gender: data.gender,
-                    positionId: data.positionId,
-                    roleId: data.roleId,
-                    image: data.image
-                },
-                {
-                    where: { id: data.id }
-                }
-            );
+            if (data.image) {
+                await db.User.update(
+                    {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        address: data.address,
+                        gender: data.gender,
+                        positionId: data.positionId,
+                        roleId: data.roleId,
+                        image: data.image
+                    },
+                    {
+                        where: { id: data.id }
+                    }
+                );
+            } else {
+                await db.User.update(
+                    {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        address: data.address,
+                        gender: data.gender,
+                        positionId: data.positionId,
+                        roleId: data.roleId
+                    },
+                    {
+                        where: { id: data.id }
+                    }
+                );
+            }
             resolve({
                 errCode: 0,
                 message: "Update user successfully!"

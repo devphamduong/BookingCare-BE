@@ -50,7 +50,7 @@ let getAllDoctors = () => {
 let saveInforDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML) {
+            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameters!',
@@ -65,21 +65,35 @@ let saveInforDoctor = (data) => {
                     errMessage: "Doctor not found!"
                 });
             } else {
-                await db.Markdown.create(
-                    {
-                        contentHTML: data.contentHTML,
-                        contentMarkdown: data.contentMarkdown,
-                        description: data.description,
-                        doctorId: data.doctorId
-                    },
-                    {
-                        where: { id: data.doctorId }
-                    }
-                );
-                resolve({
-                    errCode: 0,
-                    message: "Updated doctor successfully!"
-                });
+                if (data.action === 'CREATE') {
+                    await db.Markdown.create(
+                        {
+                            contentHTML: data.contentHTML,
+                            contentMarkdown: data.contentMarkdown,
+                            description: data.description,
+                            doctorId: data.doctorId
+                        }
+                    );
+                    resolve({
+                        errCode: 0,
+                        message: "Created doctor information successfully!"
+                    });
+                } else if (data.action === 'EDIT') {
+                    await db.Markdown.update(
+                        {
+                            contentHTML: data.contentHTML,
+                            contentMarkdown: data.contentMarkdown,
+                            description: data.description
+                        },
+                        {
+                            where: { doctorId: data.doctorId }
+                        }
+                    );
+                    resolve({
+                        errCode: 0,
+                        message: "Updated doctor information successfully!"
+                    });
+                }
             }
         } catch (error) {
             reject(error);
@@ -96,7 +110,7 @@ let getDetailDoctorById = (id) => {
                     errMessage: 'Missing required parameter!'
                 });
             } else {
-                let infor = await db.User.findOne({
+                let data = await db.User.findOne({
                     where: { id },
                     attributes: {
                         exclude: ['password'],
@@ -108,9 +122,13 @@ let getDetailDoctorById = (id) => {
                     raw: true,
                     nest: true
                 });
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
+                if (!data) data = {};
                 resolve({
                     errCode: 0,
-                    data: infor
+                    data
                 });
             }
         } catch (error) {

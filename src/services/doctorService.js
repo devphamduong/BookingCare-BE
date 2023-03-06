@@ -28,6 +28,65 @@ let getTopDoctor = (limit) => {
     });
 };
 
+let getAllDoctors = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let doctors = await db.User.findAll({
+                where: { roleId: 'R2' },
+                attributes: {
+                    exclude: ['password', 'image'],
+                }
+            });
+            resolve({
+                errCode: 0,
+                data: doctors
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+let saveInforDoctor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameters!',
+                });
+            }
+            let doctor = await db.User.findOne({
+                where: { id: data.doctorId }
+            });
+            if (!doctor) {
+                resolve({
+                    errCode: 2,
+                    errMessage: "Doctor not found!"
+                });
+            } else {
+                await db.Markdown.create(
+                    {
+                        contentHTML: data.contentHTML,
+                        contentMarkdown: data.contentMarkdown,
+                        description: data.description,
+                        doctorId: data.doctorId
+                    },
+                    {
+                        where: { id: data.doctorId }
+                    }
+                );
+                resolve({
+                    errCode: 0,
+                    message: "Updated doctor successfully!"
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    getTopDoctor
+    getTopDoctor, getAllDoctors, saveInforDoctor
 };

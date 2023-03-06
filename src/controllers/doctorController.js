@@ -12,12 +12,36 @@ let getTopDoctor = async (req, res) => {
     } catch (error) {
         return res.status(200).json({
             errCode: -1,
-            message: 'Error from server...'
+            errMessage: 'Error from server...'
         });
     }
     return res.status(200).json(response);
 };
 
+let getAllDoctors = async (req, res) => {
+    try {
+        let doctors = await doctorService.getAllDoctors();
+        return res.status(200).json(doctors);
+    } catch (error) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...'
+        });
+    }
+};
+
+let saveInforDoctor = async (req, res) => {
+    try {
+        let response = await doctorService.saveInforDoctor(req.body);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...'
+        });
+    }
+};
+
 module.exports = {
-    getTopDoctor
+    getTopDoctor, getAllDoctors, saveInforDoctor
 };

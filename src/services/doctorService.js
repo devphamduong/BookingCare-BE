@@ -162,12 +162,6 @@ let bulkCreateSchedule = (data) => {
                     where: { doctorId: data.doctorId, date: data.formattedDate },
                     attributes: ['timeType', 'date', 'doctorId', 'maxNumber']
                 });
-                //format date
-                if (existing && existing.length > 0) {
-                    existing.map(item => {
-                        return item.date = new Date(item.date).getTime();
-                    });
-                }
                 //compare different
                 let toCreate = _.differenceWith(schedules, existing, (a, b) => {
                     return a.timeType === b.timeType && +a.date === +b.date;
@@ -187,6 +181,30 @@ let bulkCreateSchedule = (data) => {
     });
 };
 
+let getScheduleByDate = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                });
+            } else {
+                let data = await db.Schedule.findAll({
+                    where: { doctorId, date }
+                });
+                if (!data) data = [];
+                resolve({
+                    errCode: 0,
+                    data
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    getTopDoctor, getAllDoctors, saveInforDoctor, getDetailDoctorById, bulkCreateSchedule
+    getTopDoctor, getAllDoctors, saveInforDoctor, getDetailDoctorById, bulkCreateSchedule, getScheduleByDate
 };

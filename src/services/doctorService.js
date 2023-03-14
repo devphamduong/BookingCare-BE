@@ -54,49 +54,83 @@ let getAllDoctors = () => {
 let saveInforDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action) {
+            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.selectedPrice || !data.selectedPayment || !data.selectedProvince || !data.nameClinic || !data.addressClinic || !data.note || !data.action) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameters!',
                 });
-            }
-            let doctor = await db.User.findOne({
-                where: { id: data.doctorId }
-            });
-            if (!doctor) {
-                resolve({
-                    errCode: 2,
-                    errMessage: "Doctor not found!"
-                });
             } else {
-                if (data.action === 'CREATE') {
-                    await db.Markdown.create(
-                        {
-                            contentHTML: data.contentHTML,
-                            contentMarkdown: data.contentMarkdown,
-                            description: data.description,
-                            doctorId: data.doctorId
-                        }
-                    );
+                let doctor = await db.User.findOne({
+                    where: { id: data.doctorId }
+                });
+                if (!doctor) {
                     resolve({
-                        errCode: 0,
-                        message: "Created doctor information successfully!"
+                        errCode: 2,
+                        errMessage: "Doctor not found!"
                     });
-                } else if (data.action === 'EDIT') {
-                    await db.Markdown.update(
-                        {
-                            contentHTML: data.contentHTML,
-                            contentMarkdown: data.contentMarkdown,
-                            description: data.description
-                        },
-                        {
-                            where: { doctorId: data.doctorId }
-                        }
-                    );
-                    resolve({
-                        errCode: 0,
-                        message: "Updated doctor information successfully!"
+                } else {
+                    //upsert to Markdown
+                    if (data.action === 'CREATE') {
+                        await db.Markdown.create(
+                            {
+                                contentHTML: data.contentHTML,
+                                contentMarkdown: data.contentMarkdown,
+                                description: data.description,
+                                doctorId: data.doctorId
+                            }
+                        );
+                    } else if (data.action === 'EDIT') {
+                        await db.Markdown.update(
+                            {
+                                contentHTML: data.contentHTML,
+                                contentMarkdown: data.contentMarkdown,
+                                description: data.description
+                            },
+                            {
+                                where: { doctorId: data.doctorId }
+                            }
+                        );
+                    }
+                    //upsert to Doctor_Infor
+                    let doctor_infor = await db.Doctor_Infor.findOne({
+                        where: { doctorId: data.doctorId }
                     });
+                    //insert 
+                    if (!doctor_infor) {
+                        await db.Doctor_Infor.create(
+                            {
+                                doctorId: data.doctorId,
+                                priceId: data.selectedPrice,
+                                paymentId: data.selectedPayment,
+                                provinceId: data.selectedProvince,
+                                nameClinic: data.nameClinic,
+                                addressClinic: data.addressClinic,
+                                note: data.note
+                            }
+                        );
+                        resolve({
+                            errCode: 0,
+                            message: "Created doctor information successfully!"
+                        });
+                    } else { //update
+                        await db.Doctor_Infor.update(
+                            {
+                                priceId: data.selectedPrice,
+                                paymentId: data.selectedPayment,
+                                provinceId: data.selectedProvince,
+                                nameClinic: data.nameClinic,
+                                addressClinic: data.addressClinic,
+                                note: data.note
+                            },
+                            {
+                                where: { doctorId: data.doctorId }
+                            }
+                        );
+                        resolve({
+                            errCode: 0,
+                            message: "Updated doctor information successfully!"
+                        });
+                    }
                 }
             }
         } catch (error) {

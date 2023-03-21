@@ -24,7 +24,7 @@ let makeAnAppointment = (data) => {
                     patientName: data.fullname,
                     doctorName: data.doctorName,
                     language: data.language,
-                    redirectLink: buildUrlEmail(data.doctorId, token),
+                    redirectLink: buildUrlEmail(token, data.doctorId),
                     time: data.time
                 });
                 //upsert patient

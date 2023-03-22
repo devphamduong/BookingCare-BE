@@ -51,13 +51,30 @@ let getAllDoctors = () => {
     });
 };
 
+let checkRequiredFields = (input) => {
+    let isValid = true;
+    let element = '';
+    let arrFields = ['doctorId', 'contentMarkdown', 'contentHTML', 'specialtyId', 'selectedPrice', 'selectedPayment', 'selectedProvince', 'nameClinic', 'addressClinic', 'note', 'action'];
+    for (let i = 0; i < arrFields.length; i++) {
+        if (!input[arrFields[i]]) {
+            isValid = false;
+            element = arrFields[i];
+            break;
+        }
+    }
+    return {
+        isValid, element
+    };
+};
+
 let saveInforDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.selectedPrice || !data.selectedPayment || !data.selectedProvince || !data.nameClinic || !data.addressClinic || !data.note || !data.action) {
+            let checkInput = checkRequiredFields(data);
+            if (!checkInput.isValid) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameters!',
+                    errMessage: `Missing ${checkInput.element} parameter!`,
                 });
             } else {
                 let doctor = await db.User.findOne({
@@ -99,6 +116,8 @@ let saveInforDoctor = (data) => {
                     if (!doctor_infor) {
                         await db.Doctor_Infor.create(
                             {
+                                specialtyId: data.specialtyId,
+                                clinicId: data.clinicId ? data.clinicId : null,
                                 doctorId: data.doctorId,
                                 priceId: data.selectedPrice,
                                 paymentId: data.selectedPayment,
@@ -115,6 +134,8 @@ let saveInforDoctor = (data) => {
                     } else { //update
                         await db.Doctor_Infor.update(
                             {
+                                specialtyId: data.specialtyId,
+                                clinicId: data.clinicId ? data.clinicId : null,
                                 priceId: data.selectedPrice,
                                 paymentId: data.selectedPayment,
                                 provinceId: data.selectedProvince,
@@ -164,7 +185,8 @@ let getDetailDoctorById = (id) => {
                             include: [
                                 { model: db.AllCode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.AllCode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
-                                { model: db.AllCode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] }
+                                { model: db.AllCode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] },
+                                { model: db.Specialty, as: 'specialtyData', attributes: ['id', 'name'] }
                             ]
                         }
                     ],

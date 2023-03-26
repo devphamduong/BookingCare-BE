@@ -29,7 +29,7 @@ let getAllClinics = async (req, res) => {
 
 let getDetailClinicById = async (req, res) => {
     try {
-        let infor = await clinicService.getDetailClinicById(req.query.id, req.query.location);
+        let infor = await clinicService.getDetailClinicById(req.query.id);
         return res.status(200).json(infor);
     } catch (error) {
         console.log(error);

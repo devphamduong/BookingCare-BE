@@ -30,16 +30,16 @@ let createClinic = (data) => {
 let getAllClinics = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let specialties = await db.Specialty.findAll();
-            if (specialties && specialties.length > 0) {
-                specialties.map(item => {
+            let clinics = await db.Clinic.findAll();
+            if (clinics && clinics.length > 0) {
+                clinics.map(item => {
                     item.image = new Buffer(item.image, 'base64').toString('binary');
                     return item;
                 });
             }
             resolve({
                 errCode: 0,
-                data: specialties
+                data: clinics
             });
         } catch (error) {
             reject(error);
@@ -47,36 +47,27 @@ let getAllClinics = () => {
     });
 };
 
-let getDetailClinicById = (id, location) => {
+let getDetailClinicById = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!id || !location) {
+            if (!id) {
                 resolve({
                     errCode: 1,
                     data: 'Missing required parameter!'
                 });
             } else {
-                let data = await db.Specialty.findOne({
+                let data = await db.Clinic.findOne({
                     where: { id },
-                    attributes: ['descriptionHTML', 'descriptionMarkdown']
+                    attributes: ['name', 'address', 'descriptionHTML', 'descriptionMarkdown']
                 });
                 if (data) {
-                    let doctorSpecialty = [];
-                    if (location === 'ALL') {
-                        doctorSpecialty = await db.Doctor_Infor.findAll({
-                            where: { specialtyId: id },
-                            attributes: ['doctorId', 'provinceId']
-                        });
-                    } else {
-                        doctorSpecialty = await db.Doctor_Infor.findAll({
-                            where: {
-                                specialtyId: id,
-                                provinceId: location
-                            },
-                            attributes: ['doctorId', 'provinceId']
-                        });
-                    }
-                    data.doctorSpecialty = doctorSpecialty;
+                    let doctorClinic = await db.Doctor_Infor.findAll({
+                        where: {
+                            clinicId: id
+                        },
+                        attributes: ['doctorId', 'provinceId']
+                    });
+                    data.doctorClinic = doctorClinic;
                 } else {
                     data = {};
                 }

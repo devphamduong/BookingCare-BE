@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import db from '../models/index';
+import emailService from './emailService';
 require('dotenv').config();
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
@@ -401,6 +402,52 @@ let getListPatientForDoctor = (doctorId, date) => {
     });
 };
 
+let sendRemedy = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.doctorId || !data.patientId || !data.timeType) {
+                resolve({
+                    errCode: 1,
+                    errMessage: `Missing required parameter!`,
+                });
+            } else {
+                //update patient status
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        patientId: data.patientId,
+                        timeType: data.timeType,
+                        statusId: 'S2'
+                    }
+                });
+                if (appointment) {
+                    await db.Booking.update(
+                        {
+                            statusId: 'S3'
+                        },
+                        {
+                            where: {
+                                doctorId: data.doctorId,
+                                patientId: data.patientId,
+                                timeType: data.timeType,
+                                statusId: 'S2'
+                            }
+                        }
+                    );
+                }
+                //send email remedy
+                await emailService.sendAttachment(data);
+                resolve({
+                    errCode: 0,
+                    message: "Updated booking status successfully!"
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 module.exports = {
-    getTopDoctor, getAllDoctors, saveInforDoctor, getDetailDoctorById, bulkCreateSchedule, getScheduleByDate, getDoctorExtraInforById, getDoctorProfileById, getListPatientForDoctor
+    getTopDoctor, getAllDoctors, saveInforDoctor, getDetailDoctorById, bulkCreateSchedule, getScheduleByDate, getDoctorExtraInforById, getDoctorProfileById, getListPatientForDoctor, sendRemedy
 };
